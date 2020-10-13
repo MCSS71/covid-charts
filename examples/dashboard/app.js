@@ -1538,7 +1538,7 @@ am4core.ready(function() {
         polygon.dataItem.dataContext.active = di.confirmed - di.recovered - di.deaths;
         polygon.dataItem.dataContext.activePC = polygon.dataItem.dataContext.active / population * 1000000;
 
-        if (population > 100000) {
+        if (population > 1000000) { //changed from 100 000 to 1 000 000
           if (polygon.dataItem.dataContext.confirmedPC > maxPC.confirmed) {
             maxPC.confirmed = polygon.dataItem.dataContext.confirmedPC;
           }
