@@ -324,12 +324,16 @@ am4core.ready(function() {
     var country = list[i]
     countryIndexMap[country.id] = i;
   }
+  console.log(list);
+  console.log(countryIndexMap);
 
   // calculated active cases in world data (active = confirmed - recovered)
   for (var i = 0; i < covid_total_timeline.length; i++) {
     var di = covid_total_timeline[i];
     di.active = di.confirmed - di.recovered - di.deaths;
   }
+
+  console.log(di);
 
   // function that returns current slide
   // if index is not set, get last slide
@@ -379,6 +383,8 @@ am4core.ready(function() {
     }
     max.active = max.confirmed;
   }
+
+  console.log(di);
 
   // END OF DATA
 
