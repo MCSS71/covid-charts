@@ -291,8 +291,4 @@ am4core.ready(function () {
         polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
     }
 
-
-
-    {value.formatNumber('#a')}
-
 });
