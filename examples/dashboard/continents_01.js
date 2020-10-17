@@ -22,6 +22,10 @@ am4core.ready(function () {
     var countryHoverColor = am4core.color("#1b1b1b");
     var activeCountryColor = am4core.color("#0f0f0f");
 
+    var currentType;
+    var currentTypeName;
+    var perCapita = false;
+
 
     var max = { confirmed: 0, recovered: 0, deaths: 0, active: 0 };
     //var maxPC = { confirmed: 0, recovered: 0, deaths: 0, active: 0 };
@@ -96,7 +100,7 @@ am4core.ready(function () {
     polygonTemplate.strokeOpacity = 0.15
     //polygonTemplate.tooltipText = "{name} {value.formatNumber('# ###')}"; // value igual a cases defenido acima
 
-    polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a cases defenido acima
+    //polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a cases defenido acima
 
 
     // Create hover state and set alternative fill color
@@ -120,7 +124,9 @@ am4core.ready(function () {
 
     //afinal o index é essencial. uppsss!
 
-    polygonSeries.heatRules.getIndex(0).minValue = 5000000;
+    polygonSeries.heatRules.getIndex(0).minValue = 100000;
+
+    //polygonSeries.heatRules.getIndex(0).minValue = 5000000;
     polygonSeries.heatRules.getIndex(0).maxValue = max.confirmed;
     //polygonSeries.heatRules.getIndex(0).maxValue = 25000000;
 
@@ -221,6 +227,51 @@ am4core.ready(function () {
         changeDataType(event.target.dummyData);
     };
 
+    // change data type (active/confirmed/recovered/deaths)
+    function changeDataType(name) {
+        currentType = name;
+        currentTypeName = name;
+        if (name != "deaths") {
+            currentTypeName += " cases";
+        }
+
+        if (name == "confirmed") {
+            currentType = "cases";
+            currentTypeName = "confirmed cases";
+        }
+
+        //bubbleSeries.mapImages.template.tooltipText = "[bold]{name}: {value}[/] [font-size:10px]\n" + currentTypeName;
+
+        // make button active
+        var activeButton = buttons[name];
+        activeButton.isActive = true;
+        // make other buttons inactive
+        for (var key in buttons) {
+            if (buttons[key] != activeButton) {
+                buttons[key].isActive = false;
+            }
+        }
+        // tell series new field name
+        polygonSeries.dataFields.value = name;
+
+        /*     bubbleSeries.dataItems.each(function (dataItem) {
+              dataItem.setValue("value", dataItem.dataContext[currentType]);
+            }) */
+
+        polygonSeries.dataItems.each(function (dataItem) {
+            dataItem.setValue("value", dataItem.dataContext[currentType]);
+            dataItem.mapPolygon.defaultState.properties.fill = undefined;
+        })
+
+
+        // update heat rule's maxValue
+        polygonSeries.heatRules.getIndex(0).maxValue = max[currentType];
+        if (!perCapita) {
+            polygonSeries.heatRules.getIndex(0).max = colors[name];
+            updateCountryTooltip();
+        }
+    }
+
     // Add grid
     var grid = mapChart.series.push(new am4maps.GraticuleSeries());
     grid.mapLines.template.line.stroke = am4core.color("#e33");
@@ -233,8 +284,15 @@ am4core.ready(function () {
 
     grid.toBack();
 
+    changeDataType("active");
+
+    function updateCountryTooltip() {
+        //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#.')}[/]\n[font-size:10px]" + currentTypeName + " per million"
+        polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
+    }
 
 
 
+    {value.formatNumber('#a')}
 
 });
