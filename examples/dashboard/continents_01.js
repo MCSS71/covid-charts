@@ -3,6 +3,24 @@ am4core.ready(function () {
 
 
     am4core.useTheme(am4themes_animated);
+    am4core.useTheme(am4themes_dark);
+
+    var numberFormatter = new am4core.NumberFormatter();
+
+    var backgroundColor = am4core.color("#1e2128");
+    var activeColor = am4core.color("#ff8726");
+    var confirmedColor = am4core.color("#d21a1a");
+    var recoveredColor = am4core.color("#45d21a");
+    var deathsColor = am4core.color("#1c5fe5");
+
+    // for an easier access by key
+    var colors = { active: activeColor, confirmed: confirmedColor, recovered: recoveredColor, deaths: deathsColor };
+
+    var countryColor = am4core.color("#3b3b3b");
+    var countryStrokeColor = am4core.color("#000000");
+    var buttonStrokeColor = am4core.color("#ffffff");
+    var countryHoverColor = am4core.color("#1b1b1b");
+    var activeCountryColor = am4core.color("#0f0f0f");
 
 
     var max = { confirmed: 0, recovered: 0, deaths: 0, active: 0 };
@@ -27,39 +45,62 @@ am4core.ready(function () {
 
     console.log(max);
 
-    var map = am4core.create("vis1", am4maps.MapChart);
+    // ----- MAIN CONTAINER ----- //
+    // https://www.amcharts.com/docs/v4/concepts/svg-engine/containers/
+    var container = am4core.create("chartdiv", am4core.Container);
+    container.width = am4core.percent(100);
+    container.height = am4core.percent(100);
 
-    map.geodata = am4geodata_continentsRussiaEuropeLow;
+    container.tooltip = new am4core.Tooltip();
+    container.tooltip.background.fill = am4core.color("#000000");
+    container.tooltip.background.stroke = activeColor;
+    container.tooltip.fontSize = "0.9em";
+    container.tooltip.getFillFromObject = false;
+    container.tooltip.getStrokeFromObject = false;
 
-    map.projection = new am4maps.projections.Miller();
+    // ---- MAP CHART ----- //
+    var mapChart = container.createChild(am4maps.MapChart);
+    mapChart.geodata = am4geodata_continentsRussiaEuropeLow;
+    mapChart.projection = new am4maps.projections.Miller();
     //map.projection = new am4maps.projections.Mercator();
 
+    mapChart.language.locale["_thousandSeparator"] = " ";
+
     // you can have pacific - centered map if you set this to -154.8
-    map.deltaLongitude = -8;
+    mapChart.deltaLongitude = -8;
 
-    var polygonSeries = map.series.push(new am4maps.MapPolygonSeries());
+    mapChart.zoomControl = new am4maps.ZoomControl();
+    mapChart.zoomControl.align = "right";
+    mapChart.zoomControl.marginRight = 15;
+    mapChart.zoomControl.valign = "middle";
+    mapChart.zoomControl.slider.height = 100;
+
+    //map.panBehavior = "move"; // default
+    mapChart.panBehavior = "rotateLong";
+
+
+    // ---- MAP POLYGON SERIES ----- //
+    var polygonSeries = mapChart.series.push(new am4maps.MapPolygonSeries());
     polygonSeries.useGeodata = true;
-
     polygonSeries.data = mydata;
-
-    //polygonSeries.data = mapData;
-    //polygonSeries.data.url = "../data/API/continentes.json";
-    //polygonSeries.dataSource.url = "../data/API/continentes.json";
     //polygonSeries.dataFields.id = "name"; //"continent";
     polygonSeries.dataFields.value = "cases";
 
     polygonSeries.exclude = ["antarctica"];
 
-    // Configure series
+    // ----- Configure polygon series ----- //
     var polygonTemplate = polygonSeries.mapPolygons.template;
-    //polygonTemplate.tooltipText = "{name} {value} {cases}";
-    polygonTemplate.tooltipText = "{name} {value}"; // value igual a cases defenido acima
-    //polygonTemplate.fill = am4core.color("#74B266");
-    //polygonTemplate.fill = am4core.color("#ffffff");
+    polygonTemplate.fill = countryColor;
+    polygonTemplate.fillOpacity = 1
+    polygonTemplate.stroke = countryStrokeColor;
+    polygonTemplate.strokeOpacity = 0.15
+    //polygonTemplate.tooltipText = "{name} {value.formatNumber('# ###')}"; // value igual a cases defenido acima
+
+    polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a cases defenido acima
+
 
     // Create hover state and set alternative fill color
     var hs = polygonTemplate.states.create("hover");
-    //hs.properties.fill = am4core.color("#367B25");
     hs.properties.fill = am4core.color("#8f8f8f");
 
     // Add heat rule
@@ -67,7 +108,7 @@ am4core.ready(function () {
         "target": polygonSeries.mapPolygons.template,
         "property": "fill",
         //"min": am4core.color("#ffffff"),
-        "min": am4core.color("#3b3b3b"),
+        "min": countryColor, //am4core.color("#3b3b3b"),
         "max": am4core.color("#d21a1a"),
         //"dataField": "value",
         //"logarithmic": true
@@ -80,11 +121,108 @@ am4core.ready(function () {
     //afinal o index é essencial. uppsss!
 
     polygonSeries.heatRules.getIndex(0).minValue = 5000000;
-    polygonSeries.heatRules.maxValue = max.confirmed;
+    polygonSeries.heatRules.getIndex(0).maxValue = max.confirmed;
     //polygonSeries.heatRules.getIndex(0).maxValue = 25000000;
 
+    // ----- END OF MAP POLYGON SERIES ----- //
+
+    // END OF MAP
+
+    // switch between map and globe
+    var mapGlobeSwitch = mapChart.createChild(am4core.SwitchButton);
+    mapGlobeSwitch.align = "right"
+    mapGlobeSwitch.y = 15;
+    mapGlobeSwitch.leftLabel.text = "Map";
+    mapGlobeSwitch.leftLabel.fill = am4core.color("#ffffff");
+    mapGlobeSwitch.rightLabel.fill = am4core.color("#ffffff");
+    mapGlobeSwitch.rightLabel.text = "Globe";
+    mapGlobeSwitch.verticalCenter = "top";
+
+    // buttons & chart container
+    var buttonsAndChartContainer = container.createChild(am4core.Container);
+    buttonsAndChartContainer.layout = "vertical";
+    buttonsAndChartContainer.height = am4core.percent(15); // make this bigger if you want more space for the chart
+    buttonsAndChartContainer.width = am4core.percent(100);
+    buttonsAndChartContainer.valign = "bottom";
+
+    // country name and buttons container
+    var nameAndButtonsContainer = buttonsAndChartContainer.createChild(am4core.Container)
+    nameAndButtonsContainer.width = am4core.percent(100);
+    nameAndButtonsContainer.padding(0, 10, 5, 20);
+    nameAndButtonsContainer.layout = "horizontal";
+
+    // buttons container (active/confirmed/recovered/deaths)
+    var buttonsContainer = nameAndButtonsContainer.createChild(am4core.Container);
+    buttonsContainer.layout = "grid";
+    buttonsContainer.width = am4core.percent(100);
+    buttonsContainer.x = 10;
+    buttonsContainer.contentAlign = "right";
+
+    // BUTTONS
+    // create buttons
+    var activeButton = addButton("active", activeColor);
+    var confirmedButton = addButton("confirmed", confirmedColor);
+    var recoveredButton = addButton("recovered", recoveredColor);
+    var deathsButton = addButton("deaths", deathsColor);
+
+    var buttons = { active: activeButton, confirmed: confirmedButton, recovered: recoveredButton, deaths: deathsButton };
+
+
+    // add button
+    function addButton(name, color) {
+        var button = buttonsContainer.createChild(am4core.Button)
+        button.label.valign = "middle"
+        button.label.fill = am4core.color("#ffffff");
+        //button.label.fontSize = "11px";
+        button.background.cornerRadius(30, 30, 30, 30);
+        button.background.strokeOpacity = 0.3
+        button.background.fillOpacity = 0;
+        button.background.stroke = buttonStrokeColor;
+        button.background.padding(2, 3, 2, 3);
+        button.states.create("active");
+        button.setStateOnChildren = true;
+
+        var activeHoverState = button.background.states.create("hoverActive");
+        activeHoverState.properties.fillOpacity = 0;
+
+        var circle = new am4core.Circle();
+        circle.radius = 8;
+        circle.fillOpacity = 0.3;
+        circle.fill = buttonStrokeColor;
+        circle.strokeOpacity = 0;
+        circle.valign = "middle";
+        circle.marginRight = 5;
+        button.icon = circle;
+
+        // save name to dummy data for later use
+        button.dummyData = name;
+
+        var circleActiveState = circle.states.create("active");
+        circleActiveState.properties.fill = color;
+        circleActiveState.properties.fillOpacity = 0.5;
+
+        button.events.on("hit", handleButtonClick);
+
+        return button;
+    };
+
+    for (var key in buttons) {
+        buttons[key].label.text = capitalizeFirstLetter(key);
+    };
+
+    // capitalize first letter
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // handle button clikc
+    function handleButtonClick(event) {
+        // we saved name to dummy data
+        changeDataType(event.target.dummyData);
+    };
+
     // Add grid
-    var grid = map.series.push(new am4maps.GraticuleSeries());
+    var grid = mapChart.series.push(new am4maps.GraticuleSeries());
     grid.mapLines.template.line.stroke = am4core.color("#e33");
     grid.mapLines.template.line.strokeOpacity = 0.2;
     // if not set default to 10
@@ -95,15 +233,8 @@ am4core.ready(function () {
 
     grid.toBack();
 
-    //map.panBehavior = "move"; // default
-    map.panBehavior = "rotateLong";
-    //map.panBehavior = "rotateLat";
-    //map.panBehavior = "rotateLongLat";
 
-    map.zoomControl = new am4maps.ZoomControl();
-    map.zoomControl.align = "right";
-    map.zoomControl.marginRight = 15;
-    map.zoomControl.valign = "middle";
-    map.zoomControl.slider.height = 100;
+
+
 
 });
