@@ -25,6 +25,8 @@ am4core.ready(function () {
     var confirmedColor = am4core.color("#d21a1a");
     var recoveredColor = am4core.color("#45d21a");
     var deathsColor = am4core.color("#1c5fe5");
+    var testsColor = am4core.color("#0087e5");
+    var criticalColor = am4core.color("#ebde34");
 
     var countryColor = am4core.color("#3b3b3b");
     var countryStrokeColor = am4core.color("#000000");
@@ -35,7 +37,14 @@ am4core.ready(function () {
     var backgroundColor = am4core.color("#1e2128");
 
     // for an easier access by key
-    var colors = { active: activeColor, confirmed: confirmedColor, recovered: recoveredColor, deaths: deathsColor };
+    var colors = {
+        active: activeColor,
+        confirmed: confirmedColor,
+        recovered: recoveredColor,
+        deaths: deathsColor,
+        tests: testsColor,
+        critical: criticalColor,
+    };
 
     // ----- END COLORS
 
@@ -44,8 +53,8 @@ am4core.ready(function () {
     var perCapita = false;
 
 
-    var max = { confirmed: 0, deaths: 0, tests: 0, active: 0, recovered: 0, critical: 0 };
-    var maxPC = { confirmed: 0, deaths: 0, tests: 0, active: 0, recovered: 0, critical: 0 };
+    var max = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0  };
+    var maxPC = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0  };
 
     // get max cases values
     for (var i = 0; i < mydata.length; i++) {
@@ -243,10 +252,10 @@ am4core.ready(function () {
     // add circle inside the image
     var circle = imageTemplate.createChild(am4core.Circle);
     // this makes the circle to pulsate a bit when showing it
-    circle.hiddenState.properties.scale = 0.0001;
+/*     circle.hiddenState.properties.scale = 0.0001;
     circle.hiddenState.transitionDuration = 2000;
     circle.defaultState.transitionDuration = 2000;
-    circle.defaultState.transitionEasing = am4core.ease.elasticOut;
+    circle.defaultState.transitionEasing = am4core.ease.elasticOut; */
     // later we set fill color on template (when changing what type of data the map should show) and all the clones get the color because of this
     circle.applyOnClones = true;
 
@@ -434,8 +443,17 @@ am4core.ready(function () {
     var confirmedButton = addButton("confirmed", confirmedColor);
     var recoveredButton = addButton("recovered", recoveredColor);
     var deathsButton = addButton("deaths", deathsColor);
+    var testsButton = addButton("tests", testsColor);
+    var criticalButton = addButton("critical", criticalColor);
 
-    var buttons = { active: activeButton, confirmed: confirmedButton, recovered: recoveredButton, deaths: deathsButton };
+    var buttons = {
+        active: activeButton,
+        confirmed: confirmedButton,
+        recovered: recoveredButton,
+        deaths: deathsButton,
+        tests: testsButton,
+        critical: criticalButton
+    };
 
     // moved inside function (addButton)
     /*     for (var key in buttons) {
