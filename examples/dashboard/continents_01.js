@@ -306,7 +306,7 @@ am4core.ready(function () {
     /* -------------------------------- */
 
     // switch between map and globe
-    var mapGlobeSwitch = mapChart.createChild(am4core.SwitchButton);
+    //var mapGlobeSwitch = mapChart.createChild(am4core.SwitchButton);
     /*     mapGlobeSwitch.align = "right"
         mapGlobeSwitch.y = 15;
         mapGlobeSwitch.leftLabel.text = "Map";
