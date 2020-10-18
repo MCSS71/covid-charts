@@ -1,26 +1,43 @@
+/**
+ * ---------------------------------------
+ * Covid19 chart by continent.
+ * 
+ * For more information visit:
+ * https://www.amcharts.com/
+ * 
+ * Documentation is available at:
+ * https://www.amcharts.com/docs/v4/
+ * ---------------------------------------
+ */
+
+am4core.useTheme(am4themes_animated);
+am4core.useTheme(am4themes_dark);
 
 am4core.ready(function () {
 
-
-    am4core.useTheme(am4themes_animated);
-    am4core.useTheme(am4themes_dark);
-
     var numberFormatter = new am4core.NumberFormatter();
 
-    var backgroundColor = am4core.color("#1e2128");
+    /* ------------------ */
+    /* ----- COLORS ----- */
+    /* ------------------ */
+
     var activeColor = am4core.color("#ff8726");
     var confirmedColor = am4core.color("#d21a1a");
     var recoveredColor = am4core.color("#45d21a");
     var deathsColor = am4core.color("#1c5fe5");
 
+    var countryColor = am4core.color("#3b3b3b");
+    var countryStrokeColor = am4core.color("#000000");
+    var countryHoverColor = am4core.color("#8f8f8f"); // am4core.color("#1b1b1b");
+    var activeCountryColor = am4core.color("#0f0f0f");
+
+    var buttonStrokeColor = am4core.color("#ffffff");
+    var backgroundColor = am4core.color("#1e2128");
+
     // for an easier access by key
     var colors = { active: activeColor, confirmed: confirmedColor, recovered: recoveredColor, deaths: deathsColor };
 
-    var countryColor = am4core.color("#3b3b3b");
-    var countryStrokeColor = am4core.color("#000000");
-    var buttonStrokeColor = am4core.color("#ffffff");
-    var countryHoverColor = am4core.color("#1b1b1b");
-    var activeCountryColor = am4core.color("#0f0f0f");
+    // ----- END COLORS
 
     var currentType;
     var currentTypeName;
@@ -30,7 +47,7 @@ am4core.ready(function () {
     var max = { confirmed: 0, deaths: 0, tests: 0, active: 0, recovered: 0, critical: 0 };
     var maxPC = { confirmed: 0, deaths: 0, tests: 0, active: 0, recovered: 0, critical: 0 };
 
-    // the last day will have most
+    // get max cases values
     for (var i = 0; i < mydata.length; i++) {
         var di = mydata[i];
         if (di.cases > max.confirmed) {
@@ -71,10 +88,13 @@ am4core.ready(function () {
             maxPC.critical = di.criticalPerOneMillion;
         }
     }
-
     console.log(max);
 
-    // ----- MAIN CONTAINER ----- //
+
+
+    /* -------------------------- */
+    /* ----- MAIN CONTAINER ----- */
+    /* -------------------------- */
     // https://www.amcharts.com/docs/v4/concepts/svg-engine/containers/
     var container = am4core.create("chartdiv", am4core.Container);
     container.width = am4core.percent(100);
@@ -86,6 +106,8 @@ am4core.ready(function () {
     container.tooltip.fontSize = "0.9em";
     container.tooltip.getFillFromObject = false;
     container.tooltip.getStrokeFromObject = false;
+
+    // ----- END OF MAIN CONTAINER ----- //
 
 
 
@@ -101,6 +123,8 @@ am4core.ready(function () {
 
     // you can have pacific - centered map if you set this to -154.8
     mapChart.deltaLongitude = -8;
+
+    //mapChart.height = am4core.percent(80);
 
     mapChart.zoomControl = new am4maps.ZoomControl();
     mapChart.zoomControl.align = "right";
@@ -137,16 +161,11 @@ am4core.ready(function () {
     polygonTemplate.fill = countryColor;
     polygonTemplate.fillOpacity = 1
     polygonTemplate.stroke = countryStrokeColor;
-    polygonTemplate.setStateOnChildren = true;
     polygonTemplate.strokeOpacity = 0.15
-    //polygonTemplate.tooltipText = "{name} {value.formatNumber('# ###')}"; // value igual a cases defenido acima
+    polygonTemplate.setStateOnChildren = true;
 
-    //polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a cases defenido acima
-
-
-    // Create hover state and set alternative fill color
-    /*     var hs = polygonTemplate.states.create("hover");
-        hs.properties.fill = am4core.color("#8f8f8f"); */
+    //polygonTemplate.tooltipText = "{name} {value.formatNumber('# ###')}"; // value igual a casesPerOneMillion defenido acima
+    //polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a casesPerOneMillion defenido acima
 
     // polygon states
     var polygonHoverState = polygonTemplate.states.create("hover");
@@ -162,7 +181,7 @@ am4core.ready(function () {
         "property": "fill",
         //"min": am4core.color("#ffffff"),
         "min": countryColor, //am4core.color("#3b3b3b"),
-        "max": am4core.color("#d21a1a"),
+        "max": countryColor, //am4core.color("#d21a1a"), // min max mesmo valor para as cores dos continentes serem iguais porque inicia com bubbles
         //"dataField": "value",
         //"logarithmic": true
     });
@@ -176,7 +195,7 @@ am4core.ready(function () {
     //polygonSeries.heatRules.getIndex(0).minValue = 100000;
     //polygonSeries.heatRules.getIndex(0).minValue = 5000000;
 
-    polygonSeries.heatRules.getIndex(0).maxValue = maxPC.confirmed;
+    //polygonSeries.heatRules.getIndex(0).maxValue = maxPC.confirmed;
     //polygonSeries.heatRules.getIndex(0).maxValue = 25000000;
 
     // ----- END OF MAP POLYGON SERIES ----- //
@@ -190,15 +209,14 @@ am4core.ready(function () {
     bubbleSeries.data = mydata;
 
     bubbleSeries.dataFields.id = "id";
-    bubbleSeries.dataFields.value = "cases", //"confirmed";
+    bubbleSeries.dataFields.value = "cases"; //"confirmed";
 
-        // adjust tooltip
-        bubbleSeries.tooltip.animationDuration = 0;
+    // adjust tooltip
+    bubbleSeries.tooltip.animationDuration = 0;
     bubbleSeries.tooltip.showInViewport = false;
     bubbleSeries.tooltip.background.fillOpacity = 0.2;
     bubbleSeries.tooltip.getStrokeFromObject = true;
     bubbleSeries.tooltip.getFillFromObject = false;
-    bubbleSeries.tooltip.background.fillOpacity = 0.2;
     bubbleSeries.tooltip.background.fill = am4core.color("#000000");
 
     var imageTemplate = bubbleSeries.mapImages.template;
@@ -289,13 +307,13 @@ am4core.ready(function () {
 
     // switch between map and globe
     var mapGlobeSwitch = mapChart.createChild(am4core.SwitchButton);
-    mapGlobeSwitch.align = "right"
-    mapGlobeSwitch.y = 15;
-    mapGlobeSwitch.leftLabel.text = "Map";
-    mapGlobeSwitch.leftLabel.fill = am4core.color("#ffffff");
-    mapGlobeSwitch.rightLabel.fill = am4core.color("#ffffff");
-    mapGlobeSwitch.rightLabel.text = "Globe";
-    mapGlobeSwitch.verticalCenter = "top";
+    /*     mapGlobeSwitch.align = "right"
+        mapGlobeSwitch.y = 15;
+        mapGlobeSwitch.leftLabel.text = "Map";
+        mapGlobeSwitch.leftLabel.fill = am4core.color("#ffffff");
+        mapGlobeSwitch.rightLabel.fill = am4core.color("#ffffff");
+        mapGlobeSwitch.rightLabel.text = "Globe";
+        mapGlobeSwitch.verticalCenter = "top"; */
 
     // switch between absolute and percapita
     var absolutePerCapitaSwitch = mapChart.createChild(am4core.SwitchButton);
@@ -305,17 +323,12 @@ am4core.ready(function () {
     absolutePerCapitaSwitch.leftLabel.fill = am4core.color("#ffffff");
     absolutePerCapitaSwitch.rightLabel.text = "Per Capita";
     absolutePerCapitaSwitch.rightLabel.fill = am4core.color("#ffffff");
-    absolutePerCapitaSwitch.rightLabel.interactionsEnabled = true;
-    absolutePerCapitaSwitch.rightLabel.tooltipText = "When calculating max value, countries with population less than 1.000.000 are not included."
+    //absolutePerCapitaSwitch.rightLabel.interactionsEnabled = true;
+    //absolutePerCapitaSwitch.rightLabel.tooltipText = "When calculating max value, countries with population less than 1.000.000 are not included."
     absolutePerCapitaSwitch.verticalCenter = "top";
 
     absolutePerCapitaSwitch.events.on("toggled", function () {
         if (absolutePerCapitaSwitch.isActive) {
-
-            /* if (currentType == "confirmed") {
-                currentType = "cases";
-            } */            
-
             bubbleSeries.hide(0);
             perCapita = true;
             bubbleSeries.interpolationDuration = 0;
@@ -373,14 +386,6 @@ am4core.ready(function () {
     buttonsContainer.contentAlign = "right";
 
     // BUTTONS
-    // create buttons
-    var activeButton = addButton("active", activeColor);
-    var confirmedButton = addButton("confirmed", confirmedColor);
-    var recoveredButton = addButton("recovered", recoveredColor);
-    var deathsButton = addButton("deaths", deathsColor);
-
-    var buttons = { active: activeButton, confirmed: confirmedButton, recovered: recoveredButton, deaths: deathsButton };
-
 
     // add button
     function addButton(name, color) {
@@ -406,10 +411,6 @@ am4core.ready(function () {
         circle.strokeOpacity = 0;
         circle.valign = "middle";
         circle.marginRight = 5;
-        button.icon = circle;
-
-        // save name to dummy data for later use
-        button.dummyData = name;
 
         var circleActiveState = circle.states.create("active");
         circleActiveState.properties.fill = color;
@@ -417,17 +418,34 @@ am4core.ready(function () {
 
         button.events.on("hit", handleButtonClick);
 
+        button.icon = circle;
+
+        // capitalize first letter
+        button.label.text = name.charAt(0).toUpperCase() + name.slice(1);
+
+        // save name to dummy data for later use
+        button.dummyData = name;
+
         return button;
     };
 
-    for (var key in buttons) {
-        buttons[key].label.text = capitalizeFirstLetter(key);
-    };
+    // create buttons
+    var activeButton = addButton("active", activeColor);
+    var confirmedButton = addButton("confirmed", confirmedColor);
+    var recoveredButton = addButton("recovered", recoveredColor);
+    var deathsButton = addButton("deaths", deathsColor);
 
-    // capitalize first letter
-    function capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
+    var buttons = { active: activeButton, confirmed: confirmedButton, recovered: recoveredButton, deaths: deathsButton };
+
+    // moved inside function (addButton)
+    /*     for (var key in buttons) {
+            buttons[key].label.text = capitalizeFirstLetter(key);
+        };
+    
+        // capitalize first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        } */
 
     // handle button clikc
     function handleButtonClick(event) {
@@ -452,8 +470,6 @@ am4core.ready(function () {
             currentType += "PerOneMillion";
         } */
 
-        bubbleSeries.mapImages.template.tooltipText = "[bold]{name}: {value}[/] [font-size:10px]\n" + currentTypeName;
-
         // make button active
         var activeButton = buttons[name];
         activeButton.isActive = true;
@@ -463,13 +479,24 @@ am4core.ready(function () {
                 buttons[key].isActive = false;
             }
         }
-        // tell series new field name
-        //polygonSeries.dataFields.value = name;
-        polygonSeries.dataFields.value = currentType + "PerOneMillion";
 
+        // tell bubble series new field name
+        bubbleSeries.dataFields.value = name;
         bubbleSeries.dataItems.each(function (dataItem) {
             dataItem.setValue("value", dataItem.dataContext[currentType]);
         })
+        bubbleSeries.mapImages.template.tooltipText = "[bold]{name}: {value}[/] [font-size:10px]\n" + currentTypeName;
+
+        // change color of bubbles
+        // setting colors on mapImage for tooltip colors
+        bubbleSeries.mapImages.template.fill = colors[name];
+        bubbleSeries.mapImages.template.stroke = colors[name];
+
+
+        // tell polygon series new field name
+
+        //polygonSeries.dataFields.value = name;
+        polygonSeries.dataFields.value = currentType + "PerOneMillion";
 
         polygonSeries.dataItems.each(function (dataItem) {
             dataItem.setValue("value", dataItem.dataContext[currentType + "PerOneMillion"]);
@@ -478,6 +505,7 @@ am4core.ready(function () {
 
 
         // update heat rule's maxValue
+        bubbleSeries.heatRules.getIndex(0).maxValue = max[currentType];
         polygonSeries.heatRules.getIndex(0).maxValue = maxPC[currentType];
         if (perCapita) {
             polygonSeries.heatRules.getIndex(0).max = colors[name];
@@ -503,7 +531,7 @@ am4core.ready(function () {
         //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#.')}[/]\n[font-size:10px]" + currentTypeName + " per million"
         //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
         polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value}[/]\n[font-size:10px]" + currentTypeName + " per million"
-        
+
     }
 
 });
