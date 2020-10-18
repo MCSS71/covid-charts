@@ -221,7 +221,7 @@ am4core.ready(function () {
 
     var imageTemplate = bubbleSeries.mapImages.template;
     // if you want bubbles to become bigger when zoomed, set this to false
-    imageTemplate.nonScaling = true;
+    imageTemplate.nonScaling = false;
     imageTemplate.strokeOpacity = 0;
     imageTemplate.fillOpacity = 0.55;
     imageTemplate.tooltipText = "{name}: [bold]{value}[/]";
@@ -255,7 +255,7 @@ am4core.ready(function () {
         "target": circle,
         "property": "radius",
         "min": 3,
-        "max": 30,
+        "max": 40,
         "dataField": "value"
     })
 
