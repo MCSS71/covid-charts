@@ -255,7 +255,7 @@ am4core.ready(function () {
         "target": circle,
         "property": "radius",
         "min": 3,
-        "max": 40,
+        "max": 60,
         "dataField": "value"
     })
 
