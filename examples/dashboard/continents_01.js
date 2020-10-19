@@ -43,7 +43,7 @@ am4core.ready(function () {
         recovered: recoveredColor,
         deaths: deathsColor,
         tests: testsColor,
-        critical: criticalColor,
+        critical: criticalColor
     };
 
     // ----- END COLORS
@@ -53,8 +53,8 @@ am4core.ready(function () {
     var perCapita = false;
 
 
-    var max = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0  };
-    var maxPC = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0  };
+    var max = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0 };
+    var maxPC = { active: 0, confirmed: 0, recovered: 0, deaths: 0, tests: 0, critical: 0 };
 
     // get max cases values
     for (var i = 0; i < mydata.length; i++) {
@@ -154,7 +154,7 @@ am4core.ready(function () {
     var polygonSeries = mapChart.series.push(new am4maps.MapPolygonSeries());
     polygonSeries.useGeodata = true;
     polygonSeries.data = mydata;
-    //polygonSeries.dataFields.id = "name"; //"continent";
+    polygonSeries.dataFields.id = "id";// "name"; //"continent";
     polygonSeries.dataFields.value = "casesPerOneMillion";
     polygonSeries.interpolationDuration = 0;
 
@@ -245,17 +245,17 @@ am4core.ready(function () {
         return -target.children.getIndex(0).radius;
     })
 
-    // When hovered, circles become non-opaque  
+    // When hovered, circles become opaque  
     var imageHoverState = imageTemplate.states.create("hover");
     imageHoverState.properties.fillOpacity = 1;
 
     // add circle inside the image
     var circle = imageTemplate.createChild(am4core.Circle);
     // this makes the circle to pulsate a bit when showing it
-/*     circle.hiddenState.properties.scale = 0.0001;
-    circle.hiddenState.transitionDuration = 2000;
-    circle.defaultState.transitionDuration = 2000;
-    circle.defaultState.transitionEasing = am4core.ease.elasticOut; */
+    //circle.hiddenState.properties.scale = 0.0001;
+    //circle.hiddenState.transitionDuration = 2000;
+    //circle.defaultState.transitionDuration = 2000;
+    //circle.defaultState.transitionEasing = am4core.ease.elasticOut;
     // later we set fill color on template (when changing what type of data the map should show) and all the clones get the color because of this
     circle.applyOnClones = true;
 
@@ -509,6 +509,8 @@ am4core.ready(function () {
         // setting colors on mapImage for tooltip colors
         bubbleSeries.mapImages.template.fill = colors[name];
         bubbleSeries.mapImages.template.stroke = colors[name];
+        // first child is circle
+        bubbleSeries.mapImages.template.children.getIndex(0).fill = colors[name];
 
 
         // tell polygon series new field name
@@ -543,13 +545,47 @@ am4core.ready(function () {
 
     grid.toBack();
 
-    changeDataType("active");
-
     function updateCountryTooltip() {
         //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#.')}[/]\n[font-size:10px]" + currentTypeName + " per million"
         //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
         polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value}[/]\n[font-size:10px]" + currentTypeName + " per million"
 
     }
+
+    /**
+ * Country/state list on the right
+ */
+
+    function populateCountries(list) {
+        var table = $("#areas tbody");
+        table.find(".area").remove();
+        for (var i = 0; i < list.length; i++) {
+            var area = list[i];
+            var tr = $("<tr>").addClass("area").data("areaid", area.id).appendTo(table).on("click", function () {
+                selectCountry(polygonSeries.getPolygonById($(this).data("areaid")));
+            }).hover(function () {
+                rollOverCountry(polygonSeries.getPolygonById($(this).data("areaid")));
+            });
+            $("<td>").appendTo(tr).data("areaid", area.id).html(area.continent);
+            $("<td>").addClass("value").appendTo(tr).html(area.active);
+            $("<td>").addClass("value").appendTo(tr).html(area.cases);
+            $("<td>").addClass("value").appendTo(tr).html(area.recovered);
+            $("<td>").addClass("value").appendTo(tr).html(area.deaths);
+            $("<td>").addClass("value").appendTo(tr).html(area.tests);
+            $("<td>").addClass("value").appendTo(tr).html(area.critical);
+        }
+        $("#areas").DataTable({
+            "paging": false,
+            "select": true
+        }).column("1")
+            .order("desc")
+            .draw();;
+    };
+
+
+
+
+    changeDataType("active");
+    populateCountries(mydata);
 
 });
