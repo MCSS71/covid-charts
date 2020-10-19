@@ -324,7 +324,7 @@ am4core.ready(function () {
     var country = list[i]
     countryIndexMap[country.id] = i;
   }
-  console.log(list);
+  console.log("List: ",  list);
   console.log(countryIndexMap);
 
   // calculated active cases in world data (active = confirmed - recovered - deaths)

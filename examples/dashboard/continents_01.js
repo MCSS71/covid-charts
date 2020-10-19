@@ -496,7 +496,7 @@ am4core.ready(function () {
     function changeDataType(name) {
         currentType = name;
         currentTypeName = name;
-        if (name != "deaths") {
+        if (name != "deaths" & name != "tests") {
             currentTypeName += " cases";
         }
 
