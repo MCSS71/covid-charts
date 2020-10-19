@@ -28,10 +28,10 @@ am4core.ready(function () {
     var testsColor = am4core.color("#0087e5");
     var criticalColor = am4core.color("#ebde34");
 
-    var countryColor = am4core.color("#3b3b3b");
-    var countryStrokeColor = am4core.color("#000000");
-    var countryHoverColor = am4core.color("#8f8f8f"); // am4core.color("#1b1b1b");
-    var activeCountryColor = am4core.color("#0f0f0f");
+    var continentColor = am4core.color("#3b3b3b");
+    var continentStrokeColor = am4core.color("#000000");
+    var continentHoverColor = am4core.color("#8f8f8f"); // am4core.color("#1b1b1b");
+    var activeContinentColor = am4core.color("#0f0f0f");
 
     var buttonStrokeColor = am4core.color("#ffffff");
     var backgroundColor = am4core.color("#1e2128");
@@ -167,11 +167,12 @@ am4core.ready(function () {
 
     // ----- Configure polygon series ----- //
     var polygonTemplate = polygonSeries.mapPolygons.template;
-    polygonTemplate.fill = countryColor;
+    polygonTemplate.fill = continentColor;
     polygonTemplate.fillOpacity = 1
-    polygonTemplate.stroke = countryStrokeColor;
+    polygonTemplate.stroke = continentStrokeColor;
     polygonTemplate.strokeOpacity = 0.15
     polygonTemplate.setStateOnChildren = true;
+    polygonTemplate.tooltipPosition = "fixed";
 
     //polygonTemplate.tooltipText = "{name} {value.formatNumber('# ###')}"; // value igual a casesPerOneMillion defenido acima
     //polygonTemplate.tooltipText = "{name} {value.formatNumber('#a')}"; // value igual a casesPerOneMillion defenido acima
@@ -179,18 +180,18 @@ am4core.ready(function () {
     // polygon states
     var polygonHoverState = polygonTemplate.states.create("hover");
     polygonHoverState.transitionDuration = 1400;
-    polygonHoverState.properties.fill = countryHoverColor;
+    polygonHoverState.properties.fill = continentHoverColor;
 
     var polygonActiveState = polygonTemplate.states.create("active")
-    polygonActiveState.properties.fill = activeCountryColor;
+    polygonActiveState.properties.fill = activeContinentColor;
 
     // Add heat rule
     polygonSeries.heatRules.push({
         "target": polygonSeries.mapPolygons.template,
         "property": "fill",
         //"min": am4core.color("#ffffff"),
-        "min": countryColor, //am4core.color("#3b3b3b"),
-        "max": countryColor, //am4core.color("#d21a1a"), // min max mesmo valor para as cores dos continentes serem iguais porque inicia com bubbles
+        "min": continentColor, //am4core.color("#3b3b3b"),
+        "max": continentColor, //am4core.color("#d21a1a"), // min max mesmo valor para as cores dos continentes serem iguais porque inicia com bubbles
         //"dataField": "value",
         //"logarithmic": true
     });
@@ -282,7 +283,7 @@ am4core.ready(function () {
         })
     })
 
-    // this places bubbles at the visual center of a country
+    // this places bubbles at the visual center of a continent
     imageTemplate.adapter.add("latitude", function (latitude, target) {
         var polygon = polygonSeries.getPolygonById(target.dataItem.id);
         if (polygon) {
@@ -307,6 +308,26 @@ am4core.ready(function () {
         return longitude;
     })
     // ----- END OF MAP BUBBLES SERIES ----- //
+
+    // Add grid
+    var grid = mapChart.series.push(new am4maps.GraticuleSeries());
+    grid.mapLines.template.line.stroke = am4core.color("#e33");
+    grid.mapLines.template.line.strokeOpacity = 0.2;
+    // if not set default to 10
+    grid.longitudeStep = 15; // if not set default to 10
+    grid.latitudeStep = 15; // if not set default to 10
+
+    grid.fitExtent = false; // to span it whole area of the world
+
+    grid.toBack();
+
+
+    function updateCountryTooltip() {
+        //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#.')}[/]\n[font-size:10px]" + currentTypeName + " per million"
+        //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
+        polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value}[/]\n[font-size:10px]" + currentTypeName + " per million"
+
+    }
 
 
 
@@ -357,7 +378,7 @@ am4core.ready(function () {
             polygonSeries.interpolationDuration = 0;
             bubbleSeries.interpolationDuration = 1000;
             bubbleSeries.show();
-            polygonSeries.heatRules.getIndex(0).max = countryColor;
+            polygonSeries.heatRules.getIndex(0).max = continentColor;
             polygonSeries.mapPolygons.template.tooltipText = undefined;
             //sizeSlider.show()
             //filterSlider.show();
@@ -533,30 +554,70 @@ am4core.ready(function () {
         }
     }
 
-    // Add grid
-    var grid = mapChart.series.push(new am4maps.GraticuleSeries());
-    grid.mapLines.template.line.stroke = am4core.color("#e33");
-    grid.mapLines.template.line.strokeOpacity = 0.2;
-    // if not set default to 10
-    grid.longitudeStep = 15; // if not set default to 10
-    grid.latitudeStep = 15; // if not set default to 10
+    function resetHover() {
+        polygonSeries.mapPolygons.each(function (polygon) {
+            polygon.isHover = false;
+        })
 
-    grid.fitExtent = false; // to span it whole area of the world
-
-    grid.toBack();
-
-    function updateCountryTooltip() {
-        //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#.')}[/]\n[font-size:10px]" + currentTypeName + " per million"
-        //polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value.formatNumber('#a')}[/]\n[font-size:10px]" + currentTypeName
-        polygonSeries.mapPolygons.template.tooltipText = "[bold]{name}: {value}[/]\n[font-size:10px]" + currentTypeName + " per million"
-
+        bubbleSeries.mapImages.each(function (image) {
+            image.isHover = false;
+        })
     }
 
-    /**
- * Country/state list on the right
- */
+    // what happens when a country is rolled-over
+    function rollOverContinent(mapPolygon) {
 
-    function populateCountries(list) {
+        resetHover();
+        if (mapPolygon) {
+            mapPolygon.isHover = true;
+
+            // make bubble hovered too
+            var image = bubbleSeries.getImageById(mapPolygon.dataItem.id);
+            if (image) {
+                image.dataItem.dataContext.name = mapPolygon.dataItem.dataContext.name;
+                image.isHover = true;
+            }
+        }
+    }
+
+    // what happens when a country is rolled-out
+    function rollOutContinent(mapPolygon) {
+        var image = bubbleSeries.getImageById(mapPolygon.dataItem.id)
+
+        resetHover();
+        if (image) {
+            image.isHover = false;
+        }
+    }
+
+    function handleImageOver(event) {
+        rollOverContinent(polygonSeries.getPolygonById(event.target.dataItem.id));
+    }
+
+    function handleImageOut(event) {
+        rollOutContinent(polygonSeries.getPolygonById(event.target.dataItem.id));
+    }
+
+    function handleContinentOver(event) {
+        rollOverContinent(event.target);
+    }
+
+    function handleContinentOut(event) {
+        rollOutContinent(event.target);
+    }
+
+
+    polygonTemplate.events.on("over", handleContinentOver);
+    polygonTemplate.events.on("out", handleContinentOut);
+
+    //imageTemplate.events.on("over", handleImageOver);
+    //imageTemplate.events.on("out", handleImageOut);
+
+    /* ---------------------------------- */
+    /* ----- CONTINENTS LIST TABLE  ----- */
+    /* ---------------------------------- */
+
+    function populateContinents(list) {
         var table = $("#areas tbody");
         table.find(".area").remove();
         for (var i = 0; i < list.length; i++) {
@@ -564,7 +625,10 @@ am4core.ready(function () {
             var tr = $("<tr>").addClass("area").data("areaid", area.id).appendTo(table).on("click", function () {
                 selectCountry(polygonSeries.getPolygonById($(this).data("areaid")));
             }).hover(function () {
-                rollOverCountry(polygonSeries.getPolygonById($(this).data("areaid")));
+                rollOverContinent(polygonSeries.getPolygonById($(this).data("areaid"))
+                );
+            }, function () {
+                resetHover();
             });
             $("<td>").appendTo(tr).data("areaid", area.id).html(area.continent);
             $("<td>").addClass("value").appendTo(tr).html(area.active);
@@ -586,6 +650,6 @@ am4core.ready(function () {
 
 
     changeDataType("active");
-    populateCountries(mydata);
+    populateContinents(mydata);
 
 });
