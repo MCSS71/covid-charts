@@ -131,18 +131,24 @@ am4core.ready(function () {
     mapChart.language.locale["_thousandSeparator"] = " ";
 
     // you can have pacific - centered map if you set this to -154.8
-    mapChart.deltaLongitude = -8;
+    mapChart.deltaLongitude = -12;
 
     //mapChart.height = am4core.percent(80);
 
-    mapChart.zoomControl = new am4maps.ZoomControl();
+/*     mapChart.zoomControl = new am4maps.ZoomControl();
     mapChart.zoomControl.align = "right";
     mapChart.zoomControl.marginRight = 15;
     mapChart.zoomControl.valign = "middle";
-    mapChart.zoomControl.slider.height = 100;
+    mapChart.zoomControl.slider.height = 100; */
 
     //map.panBehavior = "move"; // default
-    mapChart.panBehavior = "rotateLong";
+    //mapChart.panBehavior = "rotateLong";
+    mapChart.panBehavior = "none";
+
+    // Disable zoom and pan
+    mapChart.maxZoomLevel = 1;
+    mapChart.seriesContainer.draggable = false;
+    mapChart.seriesContainer.resizable = false;
 
     // ----- END OF MAP ----- //
 
