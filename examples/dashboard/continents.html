@@ -39,8 +39,23 @@
 <body>
   <div class="flexbox">
     <div id="chartdiv"></div>
-    <div id="list">
-      <table style="font-size:0.8vw;" id="areas" class="compact hover order-column row-border">
+    <div id="list" style="flex-basis:600px; font-size:0.875em;">
+      <table id="areas" class="compact hover order-column row-border mytbl">
+        <thead>
+          <tr>
+            <th>Continent</th>
+            <th>Active</th>
+            <th>Confirmed</th>
+            <th>Recovered</th>
+            <th>Deaths</th>
+            <th>Tests</th>
+            <th>Critical</th>            
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <table id="areasPC" class="compact hover order-column row-border mytbl">
         <thead>
           <tr>
             <th>Continent</th>
