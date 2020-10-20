@@ -135,11 +135,11 @@ am4core.ready(function () {
 
     //mapChart.height = am4core.percent(80);
 
-/*     mapChart.zoomControl = new am4maps.ZoomControl();
-    mapChart.zoomControl.align = "right";
-    mapChart.zoomControl.marginRight = 15;
-    mapChart.zoomControl.valign = "middle";
-    mapChart.zoomControl.slider.height = 100; */
+    /*     mapChart.zoomControl = new am4maps.ZoomControl();
+        mapChart.zoomControl.align = "right";
+        mapChart.zoomControl.marginRight = 15;
+        mapChart.zoomControl.valign = "middle";
+        mapChart.zoomControl.slider.height = 100; */
 
     //map.panBehavior = "move"; // default
     //mapChart.panBehavior = "rotateLong";
@@ -378,6 +378,7 @@ am4core.ready(function () {
             //filterLabel.hide();
 
             updateCountryTooltip();
+            populateContinentsPerMillion(mydata);
 
         } else {
             perCapita = false;
@@ -390,6 +391,7 @@ am4core.ready(function () {
             //filterSlider.show();
             //sizeLabel.show();
             //filterLabel.show();
+            populateContinents(mydata);
         }
 
         polygonSeries.mapPolygons.each(function (mapPolygon) {
@@ -623,7 +625,15 @@ am4core.ready(function () {
     /* ----- CONTINENTS LIST TABLE  ----- */
     /* ---------------------------------- */
 
+ var ctable = $("#areas").DataTable({
+        "paging": false,
+        "select": true
+    }).column("1").order("desc")
+    .draw();
+
     function populateContinents(list) {
+        ctable.rows().invalidate().draw();
+
         var table = $("#areas tbody");
         table.find(".area").remove();
         for (var i = 0; i < list.length; i++) {
@@ -644,12 +654,56 @@ am4core.ready(function () {
             $("<td>").addClass("value").appendTo(tr).html(area.tests);
             $("<td>").addClass("value").appendTo(tr).html(area.critical);
         }
-        $("#areas").DataTable({
+/*         $("#areas").DataTable({
             "paging": false,
             "select": true
         }).column("1")
             .order("desc")
-            .draw();;
+            .draw(); */
+
+            ctable.rows().invalidate().draw();
+
+            //$("#areas").DataTable();
+            //ctable.ajax.reload();
+
+        //ctable.column("2").order("desc")
+            //.draw()
+            //.ajax.reload();
+    };
+
+    function populateContinentsPerMillion(list) {
+
+        ctable.rows().invalidate().draw();
+
+        var table = $("#areas tbody");
+        table.find(".area").remove();
+        for (var i = 0; i < list.length; i++) {
+            var area = list[i];
+            var tr = $("<tr>").addClass("area").data("areaid", area.id).appendTo(table).on("click", function () {
+                selectCountry(polygonSeries.getPolygonById($(this).data("areaid")));
+            }).hover(function () {
+                rollOverContinent(polygonSeries.getPolygonById($(this).data("areaid"))
+                );
+            }, function () {
+                resetHover();
+            });
+            $("<td>").appendTo(tr).data("areaid", area.id).html(area.continent);
+            $("<td>").addClass("value").appendTo(tr).html(area.activePerOneMillion);
+            $("<td>").addClass("value").appendTo(tr).html(area.casesPerOneMillion);
+            $("<td>").addClass("value").appendTo(tr).html(area.recoveredPerOneMillion);
+            $("<td>").addClass("value").appendTo(tr).html(area.deathsPerOneMillion);
+            $("<td>").addClass("value").appendTo(tr).html(area.testsPerOneMillion);
+            $("<td>").addClass("value").appendTo(tr).html(area.criticalPerOneMillion);
+        }
+
+/*         $("#areas").DataTable()
+            .column("2")
+            .order("desc")
+            //.draw()
+            .ajax.reload(); */
+            //$("#areas").DataTable().rows().invalidate().draw();
+
+            //ctable.rows().invalidate().draw();
     };
 
 
