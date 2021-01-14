@@ -1,0 +1,4 @@
+# Tests directories
+tests/
+.vscode/*
+*.code-workspace
